@@ -1,7 +1,7 @@
 {
-  "name": "continue",
+  "name": "chat",
   "icon": "media/icon.png",
-  "author": "Continue Dev, Inc",
+  "author": "Architech",
   "version": "1.1.77",
   "repository": {
     "type": "git",
@@ -21,7 +21,7 @@
   "displayName": "Continue - open-source AI code assistant",
   "pricing": "Free",
   "description": "The leading open-source AI code assistant",
-  "publisher": "Continue",
+  "publisher": "chat",
   "engines": {
     "vscode": "^1.70.0",
     "node": ">=20.19.0"
@@ -84,7 +84,7 @@
       }
     ],
     "configuration": {
-      "title": "Continue",
+      "title": "chat",
       "properties": {
         "continue.telemetryEnabled": {
           "type": "boolean",
@@ -146,225 +146,225 @@
     "commands": [
       {
         "command": "continue.applyCodeFromChat",
-        "category": "Continue",
+        "category": "chat",
         "title": "Apply code from chat",
-        "group": "Continue"
+        "group": "chat"
       },
       {
         "command": "continue.acceptDiff",
-        "category": "Continue",
+        "category": "chat",
         "title": "Accept Diff",
-        "group": "Continue"
+        "group": "chat"
       },
       {
         "command": "continue.rejectDiff",
-        "category": "Continue",
+        "category": "chat",
         "title": "Reject Diff",
-        "group": "Continue",
+        "group": "chat",
         "icon": "$(stop)"
       },
       {
         "command": "continue.acceptVerticalDiffBlock",
-        "category": "Continue",
+        "category": "chat",
         "title": "Accept Vertical Diff Block",
-        "group": "Continue"
+        "group": "chat"
       },
       {
         "command": "continue.rejectVerticalDiffBlock",
-        "category": "Continue",
+        "category": "chat",
         "title": "Reject Vertical Diff Block",
-        "group": "Continue"
+        "group": "chat"
       },
       {
         "command": "continue.focusEdit",
-        "category": "Continue",
+        "category": "chat",
         "title": "Edit Highlighted Code",
-        "group": "Continue"
+        "group": "chat"
       },
       {
         "command": "continue.focusContinueInput",
-        "category": "Continue",
+        "category": "chat",
         "title": "Add Highlighted Code to Context and Clear Chat",
-        "group": "Continue"
+        "group": "chat"
       },
       {
         "command": "continue.focusContinueInputWithoutClear",
-        "category": "Continue",
+        "category": "chat",
         "title": "Add Highlighted Code to Context",
-        "group": "Continue"
+        "group": "chat"
       },
       {
         "command": "continue.debugTerminal",
-        "category": "Continue",
+        "category": "chat",
         "title": "Debug Terminal",
-        "group": "Continue"
+        "group": "chat"
       },
       {
         "command": "continue.exitEditMode",
-        "category": "Continue",
+        "category": "chat",
         "title": "Exit Edit Mode",
-        "group": "Continue"
+        "group": "chat"
       },
       {
         "command": "continue.toggleFullScreen",
-        "category": "Continue",
+        "category": "chat",
         "title": "Open in new window",
         "icon": "$(link-external)",
-        "group": "Continue"
+        "group": "chat"
       },
       {
         "command": "continue.openConfigPage",
-        "category": "Continue",
+        "category": "chat",
         "title": "Open Settings",
         "icon": "$(gear)",
-        "group": "Continue"
+        "group": "chat"
       },
       {
         "command": "continue.toggleTabAutocompleteEnabled",
-        "category": "Continue",
+        "category": "chat",
         "title": "Toggle Autocomplete Enabled",
-        "group": "Continue"
+        "group": "chat"
       },
       {
         "command": "continue.forceAutocomplete",
         "title": "Continue: Force Autocomplete",
-        "category": "Continue"
+        "category": "chat"
       },
       {
         "command": "continue.selectFilesAsContext",
-        "category": "Continue",
+        "category": "chat",
         "title": "Select Files as Context",
-        "group": "Continue"
+        "group": "chat"
       },
       {
         "command": "continue.newSession",
-        "category": "Continue",
+        "category": "chat",
         "title": "New Session",
         "icon": "$(add)",
-        "group": "Continue"
+        "group": "chat"
       },
       {
         "command": "continue.viewHistory",
-        "category": "Continue",
+        "category": "chat",
         "title": "View History",
         "icon": "$(history)",
-        "group": "Continue"
+        "group": "chat"
       },
       {
         "command": "continue.viewLogs",
-        "category": "Continue",
+        "category": "chat",
         "title": "View History",
-        "group": "Continue"
+        "group": "chat"
       },
       {
         "command": "continue.clearConsole",
-        "category": "Continue",
+        "category": "chat",
         "title": "Clear Console",
         "icon": "$(clear-all)",
-        "group": "Continue"
+        "group": "chat"
       },
       {
         "command": "continue.navigateTo",
-        "category": "Continue",
+        "category": "chat",
         "title": "Navigate to a path",
-        "group": "Continue"
+        "group": "chat"
       },
       {
         "command": "continue.writeCommentsForCode",
-        "category": "Continue",
+        "category": "chat",
         "title": "Write Comments for this Code",
-        "group": "Continue"
+        "group": "chat"
       },
       {
         "command": "continue.writeDocstringForCode",
-        "category": "Continue",
+        "category": "chat",
         "title": "Write a Docstring for this Code",
-        "group": "Continue"
+        "group": "chat"
       },
       {
         "command": "continue.fixCode",
-        "category": "Continue",
+        "category": "chat",
         "title": "Fix this Code",
-        "group": "Continue"
+        "group": "chat"
       },
       {
         "command": "continue.optimizeCode",
-        "category": "Continue",
+        "category": "chat",
         "title": "Optimize this Code",
-        "group": "Continue"
+        "group": "chat"
       },
       {
         "command": "continue.fixGrammar",
-        "category": "Continue",
+        "category": "chat",
         "title": "Fix Grammar / Spelling",
-        "group": "Continue"
+        "group": "chat"
       },
       {
         "command": "continue.codebaseForceReIndex",
-        "category": "Continue",
+        "category": "chat",
         "title": "Codebase Force Re-Index",
-        "group": "Continue"
+        "group": "chat"
       },
       {
         "command": "continue.rebuildCodebaseIndex",
-        "category": "Continue",
+        "category": "chat",
         "title": "Rebuild codebase index",
-        "group": "Continue"
+        "group": "chat"
       },
       {
         "command": "continue.docsIndex",
-        "category": "Continue",
+        "category": "chat",
         "title": "Docs Index",
-        "group": "Continue"
+        "group": "chat"
       },
       {
         "command": "continue.docsReIndex",
-        "category": "Continue",
+        "category": "chat",
         "title": "Docs Force Re-Index",
-        "group": "Continue"
+        "group": "chat"
       },
       {
         "command": "continue.focusContinueInput",
-        "category": "Continue",
+        "category": "chat",
         "title": "Focus Continue Chat",
-        "group": "Continue"
+        "group": "chat"
       },
       {
         "command": "continue.enterEnterpriseLicenseKey",
-        "category": "Continue",
+        "category": "chat",
         "title": "Enter Enterprise License Key",
-        "group": "Continue"
+        "group": "chat"
       },
       {
         "command": "continue.nextEditWindow.hideNextEditSuggestion",
-        "category": "Continue",
+        "category": "chat",
         "title": "Hide Next Edit Suggestion"
       },
       {
         "command": "continue.nextEditWindow.acceptNextEditSuggestion",
-        "category": "Continue",
+        "category": "chat",
         "title": "Accept Next Edit Suggestion"
       },
       {
         "command": "continue.forceNextEdit",
-        "category": "Continue",
+        "category": "chat",
         "title": "Continue: Force Next Edit"
       },
       {
         "command": "continue.acceptJump",
-        "category": "Continue",
+        "category": "chat",
         "title": "Continue: Accept Jump Suggestion"
       },
       {
         "command": "continue.rejectJump",
-        "category": "Continue",
+        "category": "chat",
         "title": "Continue: Reject Jump Suggestion"
       },
       {
         "command": "continue.generateRule",
-        "category": "Continue",
+        "category": "chat",
         "title": "Generate Rule",
-        "group": "Continue"
+        "group": "chat"
       }
     ],
     "keybindings": [
@@ -482,7 +482,7 @@
     "submenus": [
       {
         "id": "continue.continueSubMenu",
-        "label": "Continue"
+        "label": "chat"
       }
     ],
     "menus": {
@@ -518,44 +518,44 @@
       "editor/title/run": [
         {
           "command": "continue.rejectDiff",
-          "group": "Continue",
+          "group": "chat",
           "when": "continue.streamingDiff"
         }
       ],
       "continue.continueSubMenu": [
         {
           "command": "continue.focusContinueInputWithoutClear",
-          "group": "Continue",
+          "group": "chat",
           "when": "editorHasSelection"
         },
         {
           "command": "continue.focusEdit",
-          "group": "Continue",
+          "group": "chat",
           "when": "editorHasSelection && !editorReadonly"
         },
         {
           "command": "continue.writeCommentsForCode",
-          "group": "Continue",
+          "group": "chat",
           "when": "editorHasSelection && !editorReadonly"
         },
         {
           "command": "continue.writeDocstringForCode",
-          "group": "Continue",
+          "group": "chat",
           "when": "editorHasSelection && !editorReadonly"
         },
         {
           "command": "continue.fixCode",
-          "group": "Continue",
+          "group": "chat",
           "when": "editorHasSelection && !editorReadonly"
         },
         {
           "command": "continue.optimizeCode",
-          "group": "Continue",
+          "group": "chat",
           "when": "editorHasSelection && !editorReadonly"
         },
         {
           "command": "continue.fixGrammar",
-          "group": "Continue",
+          "group": "chat",
           "when": "editorHasSelection && editorLangId == 'markdown' && !editorReadonly"
         }
       ],
@@ -614,8 +614,8 @@
     "viewsContainers": {
       "activitybar": [
         {
-          "id": "continue",
-          "title": "Continue",
+          "id": "chat",
+          "title": "Chat",
           "icon": "media/sidebar-icon.png"
         }
       ],
@@ -628,11 +628,11 @@
       ]
     },
     "views": {
-      "continue": [
+      "chat": [
         {
           "type": "webview",
           "id": "continue.continueGUIView",
-          "name": "Continue",
+          "name": "AI Assistant",
           "icon": "media/sidebar-icon.png",
           "visibility": "visible"
         }
