@@ -1,5 +1,5 @@
 {
-  "name": "chat",
+  "name": "continue",
   "icon": "media/icon.png",
   "author": "Architech",
   "version": "1.1.77",
@@ -21,7 +21,7 @@
   "displayName": "Continue - open-source AI code assistant",
   "pricing": "Free",
   "description": "The leading open-source AI code assistant",
-  "publisher": "chat",
+  "publisher": "continue",
   "engines": {
     "vscode": "^1.70.0",
     "node": ">=20.19.0"
