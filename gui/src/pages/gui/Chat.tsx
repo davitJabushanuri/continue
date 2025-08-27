@@ -22,8 +22,10 @@ import { NewSessionButton } from "../../components/mainInput/belowMainInput/NewS
 import ThinkingBlockPeek from "../../components/mainInput/belowMainInput/ThinkingBlockPeek";
 import ContinueInputBox from "../../components/mainInput/ContinueInputBox";
 import { useOnboardingCard } from "../../components/OnboardingCard";
+import { OnboardingLogin } from "../../components/OnboardingCard/components/OnboardingLogin";
 import StepContainer from "../../components/StepContainer";
 import { TabBar } from "../../components/TabBar/TabBar";
+import { useArchitechAuth } from "../../context/ArchitechAuth";
 import { IdeMessengerContext } from "../../context/IdeMessenger";
 import { useWebviewListener } from "../../hooks/useWebviewListener";
 import { useAppDispatch, useAppSelector } from "../../redux/hooks";
@@ -42,6 +44,37 @@ import { loadLastSession } from "../../redux/thunks/session";
 import { streamResponseThunk } from "../../redux/thunks/streamResponse";
 import { isJetBrains, isMetaEquivalentKeyPressed } from "../../util";
 import { ToolCallDiv } from "./ToolCallDiv";
+
+const LoginModal: React.FC<{
+  isOpen: boolean;
+  onClose: () => void;
+  onLoginSuccess: (token: string, user: any) => void;
+}> = ({ isOpen, onClose, onLoginSuccess }) => {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white dark:bg-gray-800 rounded-lg p-4 w-full max-w-md max-h-[90vh] overflow-y-auto">
+        <div className="flex justify-end items-center mb-4">
+          <button
+            onClick={onClose}
+            className="rounded-full size-6 flex items-center justify-center bg-transparent border-none text-xl text-gray-400 cursor-pointer hover:text-gray-500"
+          >
+            ✕
+          </button>
+        </div>
+        <OnboardingLogin
+          onLoginSuccess={(token, user) => {
+            onLoginSuccess(token, user);
+            onClose();
+          }}
+          onSkipLogin={onClose}
+          isDialog={true}
+        />
+      </div>
+    </div>
+  );
+};
 
 import { FatalErrorIndicator } from "../../components/config/FatalErrorNotice";
 import InlineErrorMessage from "../../components/mainInput/InlineErrorMessage";
@@ -98,6 +131,8 @@ function fallbackRender({ error, resetErrorBoundary }: any) {
 export function Chat() {
   const dispatch = useAppDispatch();
   const ideMessenger = useContext(IdeMessengerContext);
+  const { isAuthenticated, isLoading, login } = useArchitechAuth();
+  const [showLoginModal, setShowLoginModal] = useState(false);
   const onboardingCard = useOnboardingCard();
   const showSessionTabs = useAppSelector(
     (store) => store.config.config.ui?.showSessionTabs,
@@ -162,6 +197,12 @@ export function Chat() {
       index?: number,
       editorToClearOnSend?: Editor,
     ) => {
+      // Check authentication before sending message
+      if (!isAuthenticated && !isLoading) {
+        setShowLoginModal(true);
+        return;
+      }
+
       // Cancel all pending tool calls
       pendingToolCalls.forEach((toolCallState) => {
         dispatch(
@@ -235,6 +276,8 @@ export function Chat() {
       codeToEdit,
       pendingToolCalls,
       pendingApplyStates,
+      isAuthenticated,
+      isLoading,
     ],
   );
 
@@ -455,6 +498,16 @@ export function Chat() {
           )}
         </div>
       </div>
+
+      <LoginModal
+        isOpen={showLoginModal}
+        onClose={() => setShowLoginModal(false)}
+        onLoginSuccess={(token, user) => {
+          // Update the authentication context
+          login(token, user);
+          console.log("Login successful, authentication state updated");
+        }}
+      />
     </>
   );
 }
