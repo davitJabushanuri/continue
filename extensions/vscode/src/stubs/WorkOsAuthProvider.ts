@@ -145,21 +145,33 @@ export class WorkOsAuthProvider implements AuthenticationProvider, Disposable {
   }
 
   private async storeSessions(value: ContinueAuthenticationSession[]) {
+    console.log(`WorkOsAuthProvider: Storing ${value.length} session(s) to storage`);
+    if (value.length > 0) {
+      console.log(`WorkOsAuthProvider: Storing session with id=${value[0].id}, account=${JSON.stringify(value[0].account)}`);
+    }
     const data = JSON.stringify(value, null, 2);
     await this.secretStorage.store(SESSIONS_SECRET_KEY, data);
+    console.log("WorkOsAuthProvider: Sessions stored successfully");
   }
 
   public async getSessions(
     scopes?: string[],
   ): Promise<ContinueAuthenticationSession[]> {
     // await this.hasAttemptedRefresh;
+    console.log(`WorkOsAuthProvider: getSessions() called, looking for key: ${SESSIONS_SECRET_KEY}`);
     const data = await this.secretStorage.get(SESSIONS_SECRET_KEY);
     if (!data) {
+      console.log("WorkOsAuthProvider: No session data found in storage");
       return [];
     }
 
+    console.log(`WorkOsAuthProvider: Raw storage data length: ${data.length}`);
     try {
       const value = JSON.parse(data) as ContinueAuthenticationSession[];
+      console.log(`WorkOsAuthProvider: Retrieved ${value.length} session(s) from storage`);
+      if (value.length > 0) {
+        console.log(`WorkOsAuthProvider: First session details: id=${value[0].id}, account=${JSON.stringify(value[0].account)}`);
+      }
       return value;
     } catch (e: any) {
       console.warn(`Error parsing sessions.json: ${e}`);
@@ -188,7 +200,7 @@ export class WorkOsAuthProvider implements AuthenticationProvider, Disposable {
     return this.ideRedirectUri;
   }
 
-  public static hasAttemptedRefresh: Promise<void>;
+  public static hasAttemptedRefresh: Promise<void> | undefined;
   private attemptEmitter: NodeEventEmitter;
   async refreshSessions() {
     // Prevent concurrent refresh operations
@@ -209,12 +221,15 @@ export class WorkOsAuthProvider implements AuthenticationProvider, Disposable {
   // It is important that every path in this function emits the attempted event
   // As config loading in core will be locked until refresh is attempted
   private async _refreshSessions(): Promise<void> {
+    console.log("WorkOsAuthProvider: Starting session refresh");
     const sessions = await this.getSessions();
     if (!sessions.length) {
+      console.log("WorkOsAuthProvider: No sessions found, refresh complete");
       this.attemptEmitter.emit("attempted");
       return;
     }
 
+    console.log(`WorkOsAuthProvider: Refreshing ${sessions.length} session(s)`);
     const finalSessions = [];
     for (const session of sessions) {
       try {
@@ -244,6 +259,7 @@ export class WorkOsAuthProvider implements AuthenticationProvider, Disposable {
       removed: [],
       changed: finalSessions,
     });
+    console.log(`WorkOsAuthProvider: Session refresh complete, ${finalSessions.length} sessions stored`);
   }
 
   private async _refreshSessionWithRetry(
@@ -567,7 +583,9 @@ export async function getControlPlaneSessionInfo(
     if (useOnboarding) {
       WorkOsAuthProvider.useOnboardingUri = true;
     }
-    await WorkOsAuthProvider.hasAttemptedRefresh;
+    if (WorkOsAuthProvider.hasAttemptedRefresh !== undefined) {
+      await WorkOsAuthProvider.hasAttemptedRefresh;
+    }
     const session = await authentication.getSession(
       controlPlaneEnv.AUTH_TYPE,
       [],

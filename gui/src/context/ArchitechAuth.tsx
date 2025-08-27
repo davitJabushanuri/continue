@@ -37,19 +37,24 @@ export const ArchitechAuthProvider: React.FC<{ children: React.ReactNode }> = ({
         console.log("ArchitechAuth: getStoredToken result:", result);
         
         if (result.status === "success" && result.content) {
-          const content = result.content as unknown as { token: string; user: User };
-          console.log("ArchitechAuth: Extracted content:", content);
+          console.log("ArchitechAuth: Raw result.content:", JSON.stringify(result.content, null, 2));
           
-          if (content.token && content.user) {
+          // The content has a nested structure: { status: "success", content: { token, user } }
+          const nestedContent = result.content as unknown as { 
+            status: string; 
+            content: { token: string; user: User } 
+          };
+          
+          if (nestedContent.content && nestedContent.content.token && nestedContent.content.user) {
             console.log("ArchitechAuth: Setting token and user:", { 
-              tokenExists: !!content.token, 
-              userExists: !!content.user,
-              userEmail: content.user.email 
+              tokenExists: !!nestedContent.content.token, 
+              userExists: !!nestedContent.content.user,
+              userEmail: nestedContent.content.user.email 
             });
-            setToken(content.token);
-            setUser(content.user);
+            setToken(nestedContent.content.token);
+            setUser(nestedContent.content.user);
           } else {
-            console.log("ArchitechAuth: Missing token or user in content");
+            console.log("ArchitechAuth: Missing token or user in nested content");
           }
         } else {
           console.log("ArchitechAuth: No stored auth found or error:", result);

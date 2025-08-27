@@ -1,4 +1,7 @@
+import { getControlPlaneEnvSync } from "core/control-plane/env";
+import { v4 as uuidv4 } from "uuid";
 import * as vscode from "vscode";
+
 import { API_URL } from "../../../../config";
 
 export interface ArchitechUser {
@@ -26,7 +29,43 @@ export class ArchitechAuthService {
   private static readonly TOKEN_KEY = "architech_token";
   private static readonly USER_KEY = "architech_user";
 
+  // WorkOsAuthProvider compatibility
+  private static readonly controlPlaneEnv = getControlPlaneEnvSync(true ? "production" : "none");
+  private static readonly SESSIONS_SECRET_KEY = `${ArchitechAuthService.controlPlaneEnv.AUTH_TYPE}.sessions`;
+
   constructor(private context: vscode.ExtensionContext) {}
+
+  /**
+   * Create a WorkOsAuthProvider-compatible session from ArchitechAuth data
+   * This bridges the two authentication systems
+   */
+  private async createWorkOsSession(token: string, user: ArchitechUser): Promise<void> {
+    try {
+      const session = {
+        id: uuidv4(),
+        accessToken: token,
+        account: {
+          id: user.id,
+          label: user.email,
+        },
+        scopes: [],
+        refreshToken: "", // We don't have refresh tokens in ArchitechAuth
+        expiresInMs: Date.now() + (24 * 60 * 60 * 1000), // 24 hours from now
+        loginNeeded: false,
+      };
+
+      console.log("ArchitechAuthService: Creating WorkOs session for user:", user.email);
+      
+      // Store the session in WorkOsAuthProvider format
+      const sessions = [session];
+      const data = JSON.stringify(sessions, null, 2);
+      await this.context.secrets.store(ArchitechAuthService.SESSIONS_SECRET_KEY, data);
+      
+      console.log("ArchitechAuthService: WorkOs session created successfully");
+    } catch (error) {
+      console.error("ArchitechAuthService: Failed to create WorkOs session:", error);
+    }
+  }
 
   /**
    * Authenticate user with email/password
@@ -134,6 +173,9 @@ export class ArchitechAuthService {
       ArchitechAuthService.USER_KEY,
       JSON.stringify(user),
     );
+
+    // Create a compatible session for WorkOsAuthProvider
+    await this.createWorkOsSession(token, user);
   }
 
   /**
