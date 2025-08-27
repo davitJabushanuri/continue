@@ -181,6 +181,15 @@ export function Chat() {
     };
   }, [isStreaming, jetbrains, isInEdit]);
 
+  // Check for login modal flag on component mount
+  useEffect(() => {
+    const shouldOpenLoginModal = localStorage.getItem('openLoginModal');
+    if (shouldOpenLoginModal === 'true' && !isAuthenticated && !isLoading) {
+      setShowLoginModal(true);
+      localStorage.removeItem('openLoginModal');
+    }
+  }, [isAuthenticated, isLoading]);
+
   const { widget, highlights } = useFindWidget(
     stepsDivRef,
     tabsRef,

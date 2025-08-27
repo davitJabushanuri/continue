@@ -38,7 +38,11 @@ export function AccountButton() {
       <Button
         variant="outline"
         className="mb-1 whitespace-nowrap py-1"
-        onClick={() => navigate("/")}
+        onClick={() => {
+          // Set flag to open login modal when navigating to chat
+          localStorage.setItem('openLoginModal', 'true');
+          navigate("/");
+        }}
       >
         Sign in
       </Button>
