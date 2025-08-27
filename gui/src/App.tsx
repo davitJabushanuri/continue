@@ -1,6 +1,7 @@
 import { RouterProvider, createMemoryRouter } from "react-router-dom";
 import Layout from "./components/Layout";
 import { MainEditorProvider } from "./components/mainInput/TipTapEditor";
+import { ArchitechAuthProvider } from "./context/ArchitechAuth";
 import { SubmenuContextProvidersProvider } from "./context/SubmenuContextProviders";
 import { VscThemeProvider } from "./context/VscTheme";
 import ParallelListeners from "./hooks/ParallelListeners";
@@ -55,7 +56,9 @@ function App() {
     <VscThemeProvider>
       <MainEditorProvider>
         <SubmenuContextProvidersProvider>
-          <RouterProvider router={router} />
+          <ArchitechAuthProvider>
+            <RouterProvider router={router} />
+          </ArchitechAuthProvider>
         </SubmenuContextProvidersProvider>
       </MainEditorProvider>
       <ParallelListeners />

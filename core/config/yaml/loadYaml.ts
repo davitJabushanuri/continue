@@ -154,7 +154,21 @@ async function loadConfigYaml(options: {
     };
   }
 
-  // Set defaults if undefined (this lets us keep config.json uncluttered for new users)
+  if (!config) {
+    config = {
+      name: "Local Assistant",
+      version: "1.0.0", 
+      schema: "v1",
+      models: [],
+      context: [],
+      data: [],
+      mcpServers: [],
+      rules: [],
+      prompts: [],
+      docs: []
+    };
+  }
+
   return {
     config,
     errors,

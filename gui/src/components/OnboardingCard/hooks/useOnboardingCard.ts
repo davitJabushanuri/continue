@@ -13,7 +13,7 @@ export interface UseOnboardingCard {
   show: OnboardingCardState["show"];
   activeTab: OnboardingCardState["activeTab"];
   setActiveTab: (tab: OnboardingModes) => void;
-  open: (tab?: OnboardingModes) => void;
+  open: (tab?: OnboardingModes | null) => void;
   close: (isDialog?: boolean) => void;
 }
 
@@ -30,20 +30,18 @@ export function useOnboardingCard(): UseOnboardingCard {
 
   let show: boolean;
 
-  // Always show if we explicitly want to, e.g. passing free trial
-  // and setting up keys
   if (onboardingCard.show) {
     show = true;
   } else {
     show = onboardingStatus !== "Completed" && !hasDismissedOnboardingCard;
   }
 
-  async function open(tab?: OnboardingModes) {
+  async function open(tab?: OnboardingModes | null) {
     navigate("/");
     dispatch(
       setOnboardingCard({
         show: true,
-        activeTab: tab ?? OnboardingModes.API_KEY,
+        activeTab: tab === null ? undefined : (tab ?? OnboardingModes.API_KEY),
       }),
     );
   }

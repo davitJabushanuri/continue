@@ -1,14 +1,7 @@
-import { useContext } from "react";
-import { Button, SecondaryButton } from "../..";
-import { useAuth } from "../../../context/Auth";
-import { IdeMessengerContext } from "../../../context/IdeMessenger";
-import { useAppDispatch, useAppSelector } from "../../../redux/hooks";
-import { selectCurrentOrg } from "../../../redux/slices/profilesSlice";
-import { selectFirstHubProfile } from "../../../redux/thunks/selectFirstHubProfile";
-import { hasPassedFTL } from "../../../util/freeTrial";
-import { ToolTip } from "../../gui/Tooltip";
-import ContinueLogo from "../../svg/ContinueLogo";
-import { useOnboardingCard } from "../hooks/useOnboardingCard";
+import { useState } from "react";
+import { useArchitechAuth } from "../../../context/ArchitechAuth";
+import { OnboardingLogin } from "./OnboardingLogin";
+import { OnboardingModelSelection } from "./OnboardingModelSelection";
 
 export function OnboardingCardLanding({
   onSelectConfigure,
@@ -17,90 +10,40 @@ export function OnboardingCardLanding({
   onSelectConfigure: () => void;
   isDialog?: boolean;
 }) {
-  const ideMessenger = useContext(IdeMessengerContext);
-  const onboardingCard = useOnboardingCard();
-  const auth = useAuth();
-  const currentOrg = useAppSelector(selectCurrentOrg);
-  const dispatch = useAppDispatch();
+  const { isAuthenticated, login } = useArchitechAuth();
+  const [showModelSelection, setShowModelSelection] = useState(false);
 
-  function onGetStarted() {
-    void auth.login(true).then((success) => {
-      if (success) {
-        onboardingCard.close(isDialog);
+  const handleLoginSuccess = (token: string, user: any) => {
+    login(token, user);
+    setShowModelSelection(true);
+  };
 
-        // A new assistant is created when the account is created
-        // We want to switch to this immediately
-        void dispatch(selectFirstHubProfile());
-
-        ideMessenger.post("showTutorial", undefined);
-        ideMessenger.post("showToast", ["info", "🎉 Welcome to Continue!"]);
-      }
-    });
-  }
-
-  function openPastFreeTrialOnboarding() {
-    ideMessenger.post("controlPlane/openUrl", {
-      path: "setup-models",
-      orgSlug: currentOrg?.slug,
-    });
-    onboardingCard.close(isDialog);
-  }
-
-  const pastFreeTrialLimit = hasPassedFTL();
-
-  return (
-    <div className="xs:px-0 flex w-full max-w-full flex-col items-center justify-center px-4 text-center">
-      <div className="xs:flex hidden">
-        <ContinueLogo height={75} />
+  // If already authenticated, show model selection
+  if (isAuthenticated && showModelSelection) {
+    return (
+      <div className="w-full px-4 py-6">
+        <OnboardingModelSelection isDialog={isDialog} />
       </div>
+    );
+  }
 
-      {pastFreeTrialLimit ? (
-        <>
-          <p className="xs:w-3/4 w-full text-sm">
-            You've reached the free trial limit. Visit the Continue Platform to
-            select a Coding Assistant.
-          </p>
-          <Button
-            onClick={openPastFreeTrialOnboarding}
-            className="mt-4 grid w-full grid-flow-col items-center gap-2"
-          >
-            Go to Continue Platform
-          </Button>
-        </>
-      ) : (
-        <>
-          <p className="mb-5 mt-0 w-full text-sm">
-            Log in to access a free trial of the
-            <br />
-            <span
-              className="cursor-pointer underline hover:brightness-125"
-              data-tooltip-id="models-addon-tooltip"
-              onClick={() =>
-                ideMessenger.post("controlPlane/openUrl", {
-                  path: "pricing",
-                })
-              }
-            >
-              Models Add-On
-            </span>
-            <ToolTip id="models-addon-tooltip" place="bottom">
-              Free trial includes 50 Chat requests and 2,000 autocomplete
-              requests
-            </ToolTip>
-          </p>
+  // If authenticated but haven't shown model selection yet, show it
+  if (isAuthenticated) {
+    return (
+      <div className="w-full px-4 py-6">
+        <OnboardingModelSelection isDialog={isDialog} />
+      </div>
+    );
+  }
 
-          <Button
-            onClick={onGetStarted}
-            className="mt-4 grid w-full grid-flow-col items-center gap-2"
-          >
-            Log in to Continue Hub
-          </Button>
-        </>
-      )}
-
-      <SecondaryButton onClick={onSelectConfigure} className="w-full">
-        Or, configure your own models
-      </SecondaryButton>
+  // If not authenticated, always show login form (no skip option)
+  return (
+    <div className="w-full px-4 py-6">
+      <OnboardingLogin
+        onLoginSuccess={handleLoginSuccess}
+        onSkipLogin={() => {}} // Empty function - skip is not allowed
+        isDialog={isDialog}
+      />
     </div>
   );
 }

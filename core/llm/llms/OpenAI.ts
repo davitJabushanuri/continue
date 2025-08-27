@@ -54,8 +54,16 @@ class OpenAI extends BaseLLM {
 
   constructor(options: LLMOptions) {
     super(options);
+    
+    console.log(`[OpenAI] Constructor - model: ${this.model}, apiBase: ${this.apiBase}, title: ${this.title}`);
+    
     this.useLegacyCompletionsEndpoint = options.useLegacyCompletionsEndpoint;
-    this.apiVersion = options.apiVersion ?? "2023-07-01-preview";
+
+    this.apiType = options.apiType;
+    this.apiVersion = options.apiVersion;
+    this.deployment = options.deployment ?? options.model;
+
+    console.log(`[OpenAI] Constructor complete - apiType: ${this.apiType}, deployment: ${this.deployment}, useLegacyCompletions: ${this.useLegacyCompletionsEndpoint}`);
   }
 
   static providerName = "openai";
@@ -134,40 +142,39 @@ class OpenAI extends BaseLLM {
     options: CompletionOptions,
     messages: ChatMessage[],
   ): ChatCompletionCreateParams {
+    console.log(`[OpenAI] Converting args - model: ${options.model}, messages count: ${messages.length}`);
+    
     const finalOptions = toChatBody(messages, options);
 
     finalOptions.stop = options.stop?.slice(0, this.getMaxStopWords());
 
-    // OpenAI o1-preview and o1-mini or o3-mini:
     if (this.isOSeriesOrGpt5Model(options.model)) {
-      // a) use max_completion_tokens instead of max_tokens
+      console.log(`[OpenAI] Detected O-series or GPT-5 model: ${options.model}, applying special formatting`);
       finalOptions.max_completion_tokens = options.maxTokens;
       finalOptions.max_tokens = undefined;
-
-      // b) don't support system message
       finalOptions.messages = formatMessageForO1OrGpt5(finalOptions.messages);
     }
 
     if (options.model === "o1") {
+      console.log(`[OpenAI] Detected o1 model, disabling streaming`);
       finalOptions.stream = false;
     }
 
     if (options.prediction && this.supportsPrediction(options.model)) {
+      console.log(`[OpenAI] Applying prediction settings for model: ${options.model}`);
       if (finalOptions.presence_penalty) {
-        // prediction doesn't support > 0
         finalOptions.presence_penalty = undefined;
       }
       if (finalOptions.frequency_penalty) {
-        // prediction doesn't support > 0
         finalOptions.frequency_penalty = undefined;
       }
       finalOptions.max_completion_tokens = undefined;
-
       finalOptions.prediction = options.prediction;
     } else {
       finalOptions.prediction = undefined;
     }
 
+    console.log(`[OpenAI] Args conversion complete - final options keys: ${Object.keys(finalOptions).join(', ')}`);
     return finalOptions;
   }
 
@@ -184,15 +191,21 @@ class OpenAI extends BaseLLM {
     signal: AbortSignal,
     options: CompletionOptions,
   ): Promise<string> {
+    console.log(`[OpenAI] Starting completion - model: ${options.model}, prompt length: ${prompt.length}`);
+    
     let completion = "";
+    let chunkCount = 0;
+    
     for await (const chunk of this._streamChat(
       [{ role: "user", content: prompt }],
       signal,
       options,
     )) {
       completion += chunk.content;
+      chunkCount++;
     }
 
+    console.log(`[OpenAI] Completion finished - chunks received: ${chunkCount}, total length: ${completion.length}`);
     return completion;
   }
 
@@ -200,13 +213,14 @@ class OpenAI extends BaseLLM {
     endpoint: "chat/completions" | "completions" | "models",
   ) {
     if (!this.apiBase) {
-      throw new Error(
-        "No API base URL provided. Please set the 'apiBase' option in config.json",
-      );
+      const error = "No API base URL provided. Please set the 'apiBase' option in config.json";
+      console.error(`[OpenAI] ${error}`);
+      throw new Error(error);
     }
 
+    console.log(`[OpenAI] Getting endpoint - apiBase: ${this.apiBase}, endpoint: ${endpoint}, apiType: ${this.apiType}`);
+
     if (this.apiType?.includes("azure")) {
-      // Default is `azure-openai`, but previously was `azure`
       const isAzureOpenAI =
         this.apiType === "azure-openai" || this.apiType === "azure";
 
@@ -215,10 +229,14 @@ class OpenAI extends BaseLLM {
         : endpoint;
 
       const version = this.apiVersion ? `?api-version=${this.apiVersion}` : "";
-      return new URL(`${path}${version}`, this.apiBase);
+      const url = new URL(`${path}${version}`, this.apiBase);
+      console.log(`[OpenAI] Constructed Azure URL: ${url.toString()}`);
+      return url;
     }
 
-    return new URL(endpoint, this.apiBase);
+    const url = new URL(endpoint, this.apiBase);
+    console.log(`[OpenAI] Constructed standard URL: ${url.toString()}`);
+    return url;
   }
 
   protected async *_streamComplete(
@@ -318,6 +336,8 @@ class OpenAI extends BaseLLM {
     signal: AbortSignal,
     options: CompletionOptions,
   ): AsyncGenerator<ChatMessage> {
+    console.log(`[OpenAI] Starting stream chat - model: ${options.model}, messages: ${messages.length}`);
+
     if (
       !isChatOnlyModel(options.model) &&
       this.supportsCompletions() &&
@@ -325,6 +345,7 @@ class OpenAI extends BaseLLM {
         this.useLegacyCompletionsEndpoint ||
         options.raw)
     ) {
+      console.log(`[OpenAI] Using legacy completions endpoint for model: ${options.model}`);
       for await (const content of this._legacystreamComplete(
         renderChatMessage(messages[messages.length - 1]),
         signal,
@@ -339,32 +360,52 @@ class OpenAI extends BaseLLM {
     }
 
     const body = this._convertArgs(options, messages);
+    const endpoint = this._getEndpoint("chat/completions");
 
-    const response = await this.fetch(this._getEndpoint("chat/completions"), {
-      method: "POST",
-      headers: this._getHeaders(),
-      body: JSON.stringify({
-        ...body,
-        ...this.extraBodyProperties(),
-      }),
-      signal,
-    });
+    console.log(`[OpenAI] Making chat completions request to: ${endpoint.toString()}`);
+    console.log(`[OpenAI] Request body keys: ${Object.keys(body).join(', ')}`);
 
-    // Handle non-streaming response
-    if (body.stream === false) {
-      if (response.status === 499) {
-        return; // Aborted by user
+    try {
+      const response = await this.fetch(endpoint, {
+        method: "POST",
+        headers: this._getHeaders(),
+        body: JSON.stringify({
+          ...body,
+          ...this.extraBodyProperties(),
+        }),
+        signal,
+      });
+
+      console.log(`[OpenAI] Response status: ${response.status}`);
+
+      if (body.stream === false) {
+        console.log(`[OpenAI] Processing non-streaming response`);
+        if (response.status === 499) {
+          console.log(`[OpenAI] Request cancelled (499)`);
+          return;
+        }
+        const data = await response.json();
+        console.log(`[OpenAI] Non-streaming response received`);
+        yield data.choices[0].message;
+        return;
       }
-      const data = await response.json();
-      yield data.choices[0].message;
-      return;
-    }
 
-    for await (const value of streamSse(response)) {
-      const chunk = fromChatCompletionChunk(value);
-      if (chunk) {
-        yield chunk;
+      console.log(`[OpenAI] Processing streaming response`);
+      let chunkCount = 0;
+      
+      for await (const value of streamSse(response)) {
+        const chunk = fromChatCompletionChunk(value);
+        if (chunk) {
+          chunkCount++;
+          yield chunk;
+        }
       }
+      
+      console.log(`[OpenAI] Stream completed - chunks processed: ${chunkCount}`);
+      
+    } catch (error) {
+      console.error(`[OpenAI] Error in stream chat:`, error);
+      throw error;
     }
   }
 
@@ -404,13 +445,26 @@ class OpenAI extends BaseLLM {
   }
 
   async listModels(): Promise<string[]> {
-    const response = await this.fetch(this._getEndpoint("models"), {
-      method: "GET",
-      headers: this._getHeaders(),
-    });
+    console.log(`[OpenAI] Listing models from: ${this.apiBase}`);
+    
+    try {
+      const response = await this.fetch(this._getEndpoint("models"), {
+        method: "GET",
+        headers: this._getHeaders(),
+      });
 
-    const data = await response.json();
-    return data.data.map((m: any) => m.id);
+      console.log(`[OpenAI] List models response status: ${response.status}`);
+
+      const data = await response.json();
+      const modelIds = data.data.map((m: any) => m.id);
+      
+      console.log(`[OpenAI] Found ${modelIds.length} models: ${modelIds.slice(0, 5).join(', ')}${modelIds.length > 5 ? '...' : ''}`);
+      
+      return modelIds;
+    } catch (error) {
+      console.error(`[OpenAI] Error listing models:`, error);
+      throw error;
+    }
   }
 
   private _getEmbedEndpoint() {
@@ -430,26 +484,41 @@ class OpenAI extends BaseLLM {
   }
 
   protected async _embed(chunks: string[]): Promise<number[][]> {
-    const resp = await this.fetch(this._getEmbedEndpoint(), {
-      method: "POST",
-      body: JSON.stringify({
-        input: chunks,
-        model: this.model,
-        ...this.extraBodyProperties(),
-      }),
-      headers: {
-        Authorization: `Bearer ${this.apiKey}`,
-        "Content-Type": "application/json",
-        "api-key": this.apiKey ?? "", // For Azure
-      },
-    });
+    console.log(`[OpenAI] Starting embedding - chunks: ${chunks.length}, model: ${this.model}`);
+    
+    try {
+      const resp = await this.fetch(this._getEmbedEndpoint(), {
+        method: "POST",
+        body: JSON.stringify({
+          input: chunks,
+          model: this.model,
+          ...this.extraBodyProperties(),
+        }),
+        headers: {
+          Authorization: `Bearer ${this.apiKey}`,
+          "Content-Type": "application/json",
+          "api-key": this.apiKey ?? "",
+        },
+      });
 
-    if (!resp.ok) {
-      throw new Error(await resp.text());
+      console.log(`[OpenAI] Embedding response status: ${resp.status}`);
+
+      if (!resp.ok) {
+        const errorText = await resp.text();
+        console.error(`[OpenAI] Embedding error: ${errorText}`);
+        throw new Error(errorText);
+      }
+
+      const data = (await resp.json()) as any;
+      const embeddings = data.data.map((result: { embedding: number[] }) => result.embedding);
+      
+      console.log(`[OpenAI] Embedding complete - returned ${embeddings.length} embeddings of dimension ${embeddings[0]?.length || 0}`);
+      
+      return embeddings;
+    } catch (error) {
+      console.error(`[OpenAI] Error in embedding:`, error);
+      throw error;
     }
-
-    const data = (await resp.json()) as any;
-    return data.data.map((result: { embedding: number[] }) => result.embedding);
   }
 }
 

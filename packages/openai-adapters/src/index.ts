@@ -72,7 +72,7 @@ export function constructLlmApi(config: LLMConfig): BaseLlmApi | undefined {
     case "deepinfra":
       return openAICompatible("https://api.deepinfra.com/v1/openai/", config);
     case "vllm":
-      return openAICompatible("http://localhost:8000/v1/", config);
+      return openAICompatible("http://192.168.100.22:5000/v1/", config);
     case "groq":
       return openAICompatible("https://api.groq.com/openai/v1/", config);
     case "sambanova":
@@ -110,7 +110,7 @@ export function constructLlmApi(config: LLMConfig): BaseLlmApi | undefined {
       return openAICompatible("https://api.function.network/v1/", config);
     case "llama.cpp":
     case "llamafile":
-      return openAICompatible("http://localhost:8000/", config);
+      return openAICompatible("http://192.168.100.22:5000/", config);
     case "lmstudio":
       return openAICompatible("http://localhost:1234/", config);
     case "ollama":
@@ -131,9 +131,10 @@ export {
   type Completion,
   type CompletionCreateParams,
   type CompletionCreateParamsNonStreaming,
-  type CompletionCreateParamsStreaming,
+  type CompletionCreateParamsStreaming
 } from "openai/resources/index";
 
 // export
 export type { BaseLlmApi } from "./apis/base.js";
 export type { LLMConfig } from "./types.js";
+

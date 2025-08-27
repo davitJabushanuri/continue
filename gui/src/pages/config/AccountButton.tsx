@@ -1,6 +1,5 @@
 import { UserCircleIcon } from "@heroicons/react/24/solid";
-import { isOnPremSession } from "core/control-plane/AuthTypes";
-import { ScopeSelect } from "../../components/AssistantAndOrgListbox/ScopeSelect";
+import { useNavigate } from "react-router-dom";
 import {
   Button,
   Popover,
@@ -8,29 +7,42 @@ import {
   PopoverPanel,
   Transition,
 } from "../../components/ui";
-import { useAuth } from "../../context/Auth";
-import { useAppSelector } from "../../redux/hooks";
-import { selectCurrentOrg } from "../../redux/slices/profilesSlice";
+import { useArchitechAuth } from "../../context/ArchitechAuth";
 
 export function AccountButton() {
-  const { session, logout, login, organizations } = useAuth();
-  const selectedOrg = useAppSelector(selectCurrentOrg);
+  const { user, isAuthenticated, logout, isLoading } = useArchitechAuth();
+  const navigate = useNavigate();
 
-  if (!session) {
+  console.log("AccountButton render:", { 
+    user, 
+    isAuthenticated, 
+    isLoading,
+    userExists: !!user,
+    tokenExists: !!user 
+  });
+
+  if (isLoading) {
     return (
       <Button
         variant="outline"
         className="mb-1 whitespace-nowrap py-1"
-        onClick={() => login(false)}
+        disabled
       >
-        Sign in
+        Loading...
       </Button>
     );
   }
 
-  // No login button for on-prem deployments
-  if (isOnPremSession(session)) {
-    return null;
+  if (!isAuthenticated || !user) {
+    return (
+      <Button
+        variant="outline"
+        className="mb-1 whitespace-nowrap py-1"
+        onClick={() => navigate("/")}
+      >
+        Sign in
+      </Button>
+    );
   }
 
   return (
@@ -40,7 +52,7 @@ export function AccountButton() {
           <PopoverButton className="bg-vsc-background hover:bg-vsc-input-background text-vsc-foreground my-0.5 flex cursor-pointer rounded-md border-none px-2">
             <div className="flex items-center gap-1.5">
               <span className="font-medium">
-                {selectedOrg === null ? "Personal" : selectedOrg.name}
+                {user.name || user.email}
               </span>
               <UserCircleIcon className="h-6 w-6" />
             </div>
@@ -50,24 +62,23 @@ export function AccountButton() {
             <PopoverPanel className="bg-vsc-input-background xs:p-4 absolute right-0 mt-1 rounded-md border border-zinc-700 p-2 shadow-lg">
               <div className="flex flex-col gap-3">
                 <div className="flex flex-col">
-                  <span className="font-medium">{session.account.label}</span>
+                  <span className="font-medium">{user.name || user.email}</span>
                   <span className="text-lightgray text-sm">
-                    {session.account.id}
+                    {user.email}
                   </span>
+                  {user.subscription && (
+                    <span className="text-lightgray text-xs">
+                      {user.subscription.plan} ({user.subscription.status})
+                    </span>
+                  )}
                 </div>
-
-                {organizations.length > 0 && (
-                  <div className="flex flex-col gap-1">
-                    <label className="text-vsc-foreground text-xs">
-                      Organization
-                    </label>
-                    <ScopeSelect onSelect={close} />
-                  </div>
-                )}
 
                 <Button
                   variant="ghost"
-                  onClick={logout}
+                  onClick={() => {
+                    logout();
+                    close();
+                  }}
                   className="!mx-0 w-full"
                 >
                   Sign out

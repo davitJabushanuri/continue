@@ -411,7 +411,7 @@ createOpenAISubclassTests(Vllm, {
 
 createOpenAISubclassTests(TextGenWebUI, {
   providerName: "text-gen-webui",
-  defaultApiBase: "http://localhost:5000/v1/",
+  defaultApiBase: "http://192.168.100.22:5000/v1/",
 });
 
 createOpenAISubclassTests(FunctionNetwork, {

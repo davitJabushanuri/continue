@@ -38,7 +38,6 @@ export function useSubmitOnboarding(mode: OnboardingModes, isDialog = false) {
       ideMessenger.post("showTutorial", undefined);
     }
 
-    ideMessenger.post("config/openProfile", { profileId: undefined });
     setSelectedSection("models");
   }
 

@@ -9,7 +9,6 @@ import {
   isRecommendedAgentModel,
   modelSupportsNativeTools,
 } from "core/llm/toolSupport";
-import { capitalize } from "lodash";
 import { useCallback, useEffect, useMemo } from "react";
 import { useAppDispatch, useAppSelector } from "../../redux/hooks";
 import { selectUseSystemMessageTools } from "../../redux/selectors/selectUseSystemMessageTools";
@@ -109,7 +108,6 @@ export function ModeSelect() {
         }}
         className="flex items-center gap-1"
       >
-        {`${capitalize(mode)} might not work well with this model.`}
       </ToolTip>
     </>
   );
@@ -172,16 +170,6 @@ export function ModeSelect() {
                 Read-only/MCP tools available
               </ToolTip>
             </div>
-            {isAgentSupported ? (
-              <>
-                {!isGoodAtAgentMode && notGreatAtAgent}
-                <CheckIcon
-                  className={`ml-auto h-3 w-3 ${mode === "plan" ? "" : "opacity-0"}`}
-                />
-              </>
-            ) : (
-              notSupported
-            )}
           </ListboxOption>
 
           <ListboxOption value="agent" className={"gap-1"}>
@@ -201,16 +189,7 @@ export function ModeSelect() {
                 All tools available
               </ToolTip>
             </div>
-            {isAgentSupported ? (
-              <>
-                {!isGoodAtAgentMode && notGreatAtAgent}
-                <CheckIcon
-                  className={`ml-auto h-3 w-3 ${mode === "agent" ? "" : "opacity-0"}`}
-                />
-              </>
-            ) : (
-              notSupported
-            )}
+            
           </ListboxOption>
 
           <div className="text-description-muted px-2 py-1">

@@ -16,10 +16,6 @@
 
 <p></p>
 
-**Ship faster with Continuous AI**
-
-**Build and run custom agents across your IDE, terminal, and CI**
-
 ## Agent
 
 [Agent](/features/agent/quick-start) to work on development tasks together with AI

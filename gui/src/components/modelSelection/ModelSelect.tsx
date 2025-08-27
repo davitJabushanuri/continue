@@ -2,9 +2,7 @@ import {
   ArrowPathIcon,
   CheckIcon,
   ChevronDownIcon,
-  Cog6ToothIcon,
-  CubeIcon,
-  PlusIcon,
+  CubeIcon
 } from "@heroicons/react/24/outline";
 import { useContext, useEffect, useRef, useState } from "react";
 import { useAuth } from "../../context/Auth";
@@ -224,15 +222,6 @@ function ModelSelect() {
         <ListboxOptions className="min-w-[160px]">
           <div className="flex items-center justify-between gap-1 px-2 py-1">
             <span className="font-semibold">Models</span>
-            <Cog6ToothIcon
-              className="text-description h-3 w-3 cursor-pointer hover:brightness-125"
-              onClick={() =>
-                ideMessenger.post("config/openProfile", {
-                  profileId: undefined,
-                  element: { sourceFile: selectedModel?.sourceFile },
-                })
-              }
-            />
           </div>
 
           <div className="no-scrollbar max-h-[300px] overflow-y-auto">
@@ -257,26 +246,6 @@ function ModelSelect() {
               ))
             )}
           </div>
-
-          {!isConfigLoading && selectedProfile?.profileType === "local" && (
-            <ListboxOption
-              key={options.length}
-              onClick={onClickAddModel}
-              value={"addModel" as any}
-              className="border-border border-x-0 border-y border-solid"
-            >
-              <div
-                className="text-description flex items-center py-0.5 hover:text-inherit"
-                style={{
-                  fontSize: fontSize(-3),
-                }}
-              >
-                <PlusIcon className="mr-2 h-3 w-3" />
-                Add Chat model
-              </div>
-            </ListboxOption>
-          )}
-
           {!isConfigLoading && (
             <div
               className="text-description-muted px-2 py-1"

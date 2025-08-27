@@ -81,7 +81,7 @@ export function OnboardingCard({
     >
       <div className="flex h-full w-full items-center justify-center">
         <OnboardingCardLanding
-          onSelectConfigure={() => setActiveTab(OnboardingModes.API_KEY)}
+          onSelectConfigure={() => {}} // No longer needed
           isDialog={isDialog}
         />
       </div>

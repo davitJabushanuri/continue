@@ -25,7 +25,7 @@ export async function unrollLocalYamlBlocks(
         uriType: "file",
         filePath: "",
       },
-      "name: FILLER\nschema: v1\nversion: 0.0.1",
+      "name: Local Assistant\nschema: v1\nversion: 0.0.1",
       registryClient,
       {
         currentUserSlug: "",

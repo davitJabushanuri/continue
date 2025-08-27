@@ -23,20 +23,34 @@ const GEMINI_MODEL_CONFIG = {
   apiKeyInputName: "GEMINI_API_KEY",
 };
 
-/**
- * We set the "best" chat + autocopmlete models by default
- * whenever a user doesn't have a config.json
- */
-export function setupBestConfig(config: ConfigYaml): ConfigYaml {
+function ensureBaseConfig(config: ConfigYaml): ConfigYaml {
   return {
-    ...config,
-    models: config.models,
+    name: config.name || "Local Assistant",
+    version: config.version || "1.0.0",
+    schema: config.schema || "v1",
+    models: config.models || [],
+    context: config.context,
+    data: config.data,
+    mcpServers: config.mcpServers,
+    rules: config.rules,
+    prompts: config.prompts,
+    docs: config.docs,
+    metadata: config.metadata,
+  };
+}
+
+export function setupBestConfig(config: ConfigYaml): ConfigYaml {
+  const baseConfig = ensureBaseConfig(config);
+  return {
+    ...baseConfig,
+    models: baseConfig.models,
   };
 }
 
 export function setupLocalConfig(config: ConfigYaml): ConfigYaml {
+  const baseConfig = ensureBaseConfig(config);
   return {
-    ...config,
+    ...baseConfig,
     models: [
       {
         name: LOCAL_ONBOARDING_CHAT_TITLE,
@@ -56,13 +70,64 @@ export function setupLocalConfig(config: ConfigYaml): ConfigYaml {
         model: LOCAL_ONBOARDING_EMBEDDINGS_MODEL,
         roles: ["embed"],
       },
-      ...(config.models ?? []),
+      ...(baseConfig.models ?? []),
     ],
   };
 }
 
 export function setupQuickstartConfig(config: ConfigYaml): ConfigYaml {
-  return config;
+  return ensureBaseConfig(config);
+}
+
+export function setupArchitechConfig(config: ConfigYaml, modelInfo: string): ConfigYaml {
+  const baseConfig = ensureBaseConfig(config);
+  
+  let modelData;
+  try {
+    modelData = JSON.parse(modelInfo);
+  } catch (e) {
+    console.error("Failed to parse model info:", e);
+    return baseConfig;
+  }
+
+  const roles = ["chat", "edit", "apply", "summarize", "autocomplete", "embed", "rerank"] as ("chat" | "autocomplete" | "embed" | "rerank" | "edit" | "apply" | "summarize")[];
+
+  const newModel = {
+    name: modelData.name,
+    provider: "openai" as const,
+    model: modelData.model,
+    apiBase: "http://192.168.100.22:5000/v1",
+    apiKey: "dummy-key",
+    contextLength: modelData.contextLength,
+    roles: roles,
+    capabilities: ["tool_use"] as ("tool_use" | "image_input")[],
+  };
+
+  const existingModels = baseConfig.models ?? [];
+  const existingModel = existingModels.find(model => 
+    ('name' in model && model.name === newModel.name) ||
+    ('uses' in model && model.uses === newModel.name)
+  );
+  
+  if (existingModel) {
+    const updatedModels = existingModels.map(model => {
+      if (('name' in model && model.name === newModel.name) ||
+          ('uses' in model && model.uses === newModel.name)) {
+        return newModel;
+      }
+      return model;
+    });
+    
+    return {
+      ...baseConfig,
+      models: updatedModels,
+    };
+  }
+
+  return {
+    ...baseConfig,
+    models: [...existingModels, newModel],
+  };
 }
 
 export function setupProviderConfig(
@@ -70,6 +135,7 @@ export function setupProviderConfig(
   provider: string,
   apiKey: string,
 ): ConfigYaml {
+  const baseConfig = ensureBaseConfig(config);
   let newModels;
 
   switch (provider) {
@@ -97,12 +163,14 @@ export function setupProviderConfig(
         },
       }));
       break;
+    case "architech":
+      return setupArchitechConfig(baseConfig, apiKey);
     default:
       throw new Error(`Unknown provider: ${provider}`);
   }
 
   return {
-    ...config,
-    models: [...(config.models ?? []), ...newModels],
+    ...baseConfig,
+    models: [...(baseConfig.models ?? []), ...newModels],
   };
 }

@@ -37,31 +37,45 @@ export class RegistryClient implements Registry {
   }
 
   private getContentFromFilePath(filepath: string): string {
-    if (filepath.startsWith("file://")) {
-      // For Windows file:///C:/path/to/file, we need to handle it properly
-      // On other systems, we might have file:///path/to/file
-      return fs.readFileSync(new URL(filepath), "utf8");
-    } else if (path.isAbsolute(filepath)) {
-      return fs.readFileSync(filepath, "utf8");
-    } else if (this.rootPath) {
-      return fs.readFileSync(path.join(this.rootPath, filepath), "utf8");
-    } else {
-      throw new Error("No rootPath provided for relative file path");
+    try {
+      if (filepath.startsWith("file://")) {
+        return fs.readFileSync(new URL(filepath), "utf8");
+      } else if (path.isAbsolute(filepath)) {
+        return fs.readFileSync(filepath, "utf8");
+      } else if (this.rootPath) {
+        return fs.readFileSync(path.join(this.rootPath, filepath), "utf8");
+      } else {
+        throw new Error("No rootPath provided for relative file path");
+      }
+    } catch (error) {
+      console.warn(`Failed to read file ${filepath}:`, error);
+      return "";
     }
   }
 
   private async getContentFromSlug(fullSlug: FullSlug): Promise<string> {
-    const response = await fetch(
-      `${this.apiBase}registry/v1/${fullSlug.ownerSlug}/${fullSlug.packageSlug}/${fullSlug.versionSlug}`,
-      {
-        headers: {
-          ...(this.accessToken
-            ? { Authorization: `Bearer ${this.accessToken}` }
-            : {}),
+    try {
+      const response = await fetch(
+        `${this.apiBase}registry/v1/${fullSlug.ownerSlug}/${fullSlug.packageSlug}/${fullSlug.versionSlug}`,
+        {
+          headers: {
+            ...(this.accessToken
+              ? { Authorization: `Bearer ${this.accessToken}` }
+              : {}),
+          },
         },
-      },
-    );
-    const data = await response.json();
-    return data.content;
+      );
+      
+      if (!response.ok) {
+        console.warn(`Failed to fetch content from registry: ${response.status} ${response.statusText}`);
+        return "";
+      }
+      
+      const data = await response.json();
+      return data.content || "";
+    } catch (error) {
+      console.warn(`Failed to fetch content from registry:`, error);
+      return "";
+    }
   }
 }

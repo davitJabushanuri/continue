@@ -1,18 +1,16 @@
 import type {
+  ContinueRcJson,
   DocumentSymbol,
   FileStatsMap,
   FileType,
-  IDE,
   IdeInfo,
-  IdeSettings,
-  IndexTag,
   Location,
   Problem,
   Range,
   RangeInFile,
   SignatureHelp,
   TerminalOptions,
-  Thread,
+  Thread
 } from "../";
 import { ControlPlaneSessionInfo } from "../control-plane/AuthTypes";
 
@@ -49,37 +47,39 @@ export type ToIdeFromWebviewOrCoreProtocol = {
     ),
   ];
   getPinnedFiles: [undefined, string[]];
-  showLines: [{ filepath: string; startLine: number; endLine: number }, void];
-  readRangeInFile: [{ filepath: string; range: Range }, string];
-  getDiff: [{ includeUnstaged: boolean }, string[]];
-  getTerminalContents: [undefined, string];
-  getDebugLocals: [{ threadIndex: number }, string];
-  getTopLevelCallStackSources: [
-    { threadIndex: number; stackDepth: number },
-    string[],
+  showLines: [
+    { filepath: string; startLine: number; endLine: number },
+    void,
   ];
-  getAvailableThreads: [undefined, Thread[]];
+  showDiff: [{ filepath: string; newContents: string; stepIndex: number }, void];
+  readRangeInFile: [{ filepath: string; range: Range }, string];
+  showToast: [any[], void];
+  getTerminalContents: [{ commands: number }, string];
+  getWorkspaceConfigs: [undefined, ContinueRcJson[]];
+  getDiff: [{ includeUnstaged: boolean }, string[]];
+  getClipboardContent: [undefined, { text: string; copiedAt: string }];
   isTelemetryEnabled: [undefined, boolean];
   isWorkspaceRemote: [undefined, boolean];
   getUniqueId: [undefined, string];
-  getTags: [string, IndexTag[]];
-  readSecrets: [{ keys: string[] }, Record<string, string>];
-  writeSecrets: [{ secrets: Record<string, string> }, void];
-  // end methods from IDE type
-
-  getIdeSettings: [undefined, IdeSettings];
-
-  // Git
+  getTags: [string, any[]];
+  getGitHubAuthToken: [GetGhTokenArgs, string];
   getBranch: [{ dir: string }, string];
   getRepoName: [{ dir: string }, string | undefined];
-
-  showToast: [
-    Parameters<IDE["showToast"]>,
-    Awaited<ReturnType<IDE["showToast"]>>,
-  ];
   getGitRootPath: [{ dir: string }, string | undefined];
   listDir: [{ dir: string }, [string, FileType][]];
   getFileStats: [{ files: string[] }, FileStatsMap];
+
+  // Secret Storage
+  readSecrets: [{ keys: string[] }, Record<string, string>];
+  writeSecrets: [{ secrets: { [key: string]: string } }, void];
+
+  // Debug-related methods
+  getDebugLocals: [{ threadIndex: number }, string];
+  getAvailableThreads: [undefined, Thread[]];
+  getTopLevelCallStackSources: [{ threadIndex: number; stackDepth: number }, string[]];
+  
+  // IDE settings
+  getIdeSettings: [undefined, any];
 
   gotoDefinition: [{ location: Location }, RangeInFile[]];
   gotoTypeDefinition: [{ location: Location }, RangeInFile[]];
@@ -92,6 +92,19 @@ export type ToIdeFromWebviewOrCoreProtocol = {
     ControlPlaneSessionInfo | undefined,
   ];
   logoutOfControlPlane: [undefined, void];
+  
+  // ArchiTech Auth protocols
+  "auth/login": [
+    { email: string; password: string; isSignup: boolean },
+    { status: string; content?: { token: string; user: any }; error?: string }
+  ];
+  "auth/storeToken": [{ token: string; user: any }, void];
+  "auth/getStoredToken": [
+    {},
+    { status: string; content?: { token: string; user: any }; error?: string }
+  ];
+  "auth/clearToken": [{}, void];
+  
   reportError: [any, void];
   closeSidebar: [undefined, void];
 };

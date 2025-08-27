@@ -55,9 +55,10 @@ import { stringifyMcpPrompt } from "./commands/slash/mcpSlashCommand";
 import { isLocalDefinitionFile } from "./config/loadLocalAssistants";
 import { CodebaseRulesCache } from "./config/markdown/loadCodebaseRules";
 import {
+  setupArchitechConfig,
   setupLocalConfig,
   setupProviderConfig,
-  setupQuickstartConfig,
+  setupQuickstartConfig
 } from "./config/onboarding";
 import { createNewWorkspaceBlockFile } from "./config/workspace/workspaceBlocks";
 import { MCPManagerSingleton } from "./context/mcp/MCPManagerSingleton";
@@ -72,12 +73,12 @@ import { RULES_MARKDOWN_FILENAME } from "./llm/rules/constants";
 import { llmStreamChat } from "./llm/streamChat";
 import { BeforeAfterDiff } from "./nextEdit/context/diffFormatting";
 import { processSmallEdit } from "./nextEdit/context/processSmallEdit";
+import { PrefetchQueue } from "./nextEdit/NextEditPrefetchQueue";
 import { NextEditProvider } from "./nextEdit/NextEditProvider";
 import type { FromCoreProtocol, ToCoreProtocol } from "./protocol";
 import { OnboardingModes } from "./protocol/core";
 import type { IMessenger, Message } from "./protocol/messenger";
 import { getUriPathBasename } from "./util/uri";
-import { PrefetchQueue } from "./nextEdit/NextEditPrefetchQueue";
 
 const hasRulesFiles = (uris: string[]): boolean => {
   for (const uri of uris) {
@@ -1213,8 +1214,13 @@ export class Core {
 
       case OnboardingModes.API_KEY:
         if (provider && apiKey) {
-          editConfigYamlCallback = (config: ConfigYaml) =>
-            setupProviderConfig(config, provider, apiKey);
+          if (provider === "architech") {
+            editConfigYamlCallback = (config: ConfigYaml) =>
+              setupArchitechConfig(config, apiKey);
+          } else {
+            editConfigYamlCallback = (config: ConfigYaml) =>
+              setupProviderConfig(config, provider, apiKey);
+          }
         } else {
           editConfigYamlCallback = setupQuickstartConfig;
         }

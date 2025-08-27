@@ -1,8 +1,6 @@
 import {
-  CheckIcon,
   ChevronUpDownIcon,
-  Cog6ToothIcon,
-  CubeIcon,
+  CubeIcon
 } from "@heroicons/react/24/outline";
 import { ModelDescription } from "core";
 import { LLMConfigurationStatuses } from "core/llm/constants";
@@ -26,7 +24,6 @@ interface ModelRoleSelectorProps {
   onSelect: (model: ModelDescription | null) => void;
   displayName: string;
   description: string;
-  setupURL: string;
 }
 
 const ModelRoleSelector = ({
@@ -35,7 +32,6 @@ const ModelRoleSelector = ({
   onSelect,
   displayName,
   description,
-  setupURL,
 }: ModelRoleSelectorProps) => {
   const ideMessenger = useContext(IdeMessengerContext);
   const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
@@ -81,7 +77,6 @@ const ModelRoleSelector = ({
         <div className="relative">
           {models.length === 0 ? (
             <ListboxButton
-              onClick={() => ideMessenger.post("openUrl", setupURL)}
               className="bg-vsc-editor-background hover:bg-list-active hover:text-list-active-foreground text-description w-full justify-between px-2 py-1 underline hover:underline"
             >
               <span className="line-clamp-1" style={{ fontSize: fontSize(-3) }}>
@@ -166,20 +161,6 @@ const ModelRoleSelector = ({
                                     </span>
                                   )}
                                 </span>
-                              </div>
-
-                              <div className="flex flex-shrink-0 flex-row items-center gap-1">
-                                {hoveredIdx === idx && (
-                                  <Cog6ToothIcon
-                                    className="h-3 w-3 flex-shrink-0"
-                                    onClick={(e: MouseEvent<SVGSVGElement>) =>
-                                      onClickGear(e, option)
-                                    }
-                                  />
-                                )}
-                                {option.title === selectedModel?.title && (
-                                  <CheckIcon className="h-3 w-3 flex-shrink-0" />
-                                )}
                               </div>
                             </div>
                           </div>

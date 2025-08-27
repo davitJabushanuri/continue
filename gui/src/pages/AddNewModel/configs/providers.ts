@@ -679,7 +679,7 @@ After it's up and running, you can start using Continue.`,
     collectInputFor: [
       {
         ...apiBaseInput,
-        defaultValue: "http://localhost:8000/v1/",
+        defaultValue: "http://192.168.100.22:5000/v1/",
       },
       ...completionParamsInputsConfigs,
     ],

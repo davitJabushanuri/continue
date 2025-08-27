@@ -145,7 +145,7 @@ export class MessageIde implements IDE {
   }
 
   async getTerminalContents() {
-    return await this.request("getTerminalContents", undefined);
+    return await this.request("getTerminalContents", { commands: 0 });
   }
 
   async getWorkspaceDirs(): Promise<string[]> {

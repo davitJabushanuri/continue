@@ -86,6 +86,9 @@ export class VsCodeMessenger {
     private readonly context: vscode.ExtensionContext,
     private readonly vsCodeExtension: VsCodeExtension,
   ) {
+    // Initialize ArchiTech auth service
+    const architechAuth = new (require("../auth/ArchitechAuth").ArchitechAuthService)(context);
+
     /** WEBVIEW ONLY LISTENERS **/
     this.onWebview("showFile", (msg) => {
       this.ide.openFile(msg.data.filepath);
@@ -353,7 +356,7 @@ export class VsCodeMessenger {
       return ide.showLines(filepath, startLine, endLine);
     });
     this.onWebviewOrCore("showToast", (msg) => {
-      this.ide.showToast(...msg.data);
+      (this.ide.showToast as any).apply(this.ide, msg.data);
     });
     this.onWebviewOrCore("getControlPlaneSessionInfo", async (msg) => {
       return getControlPlaneSessionInfo(
@@ -432,6 +435,54 @@ export class VsCodeMessenger {
 
     this.onWebviewOrCore("reportError", async (msg) => {
       await handleLLMError(msg.data);
+    });
+
+    this.onWebviewOrCore("auth/login", async (msg) => {
+      const { email, password, isSignup } = msg.data;
+      console.log("auth/login called with:", { email, isSignup, hasPassword: !!password });
+      
+      const result = await architechAuth.login(email, password, isSignup);
+      
+      console.log("auth/login result:", JSON.stringify(result, null, 2));
+      
+      return result;
+    });
+
+    this.onWebviewOrCore("auth/storeToken", async (msg) => {
+      const { token, user } = msg.data;
+      
+      if (!token || !user) {
+        console.error("auth/storeToken called with invalid data:", { 
+          tokenExists: !!token, 
+          userExists: !!user,
+          msgData: msg.data 
+        });
+        throw new Error("Invalid token or user data provided");
+      }
+
+      console.log("Storing auth data:", { 
+        tokenExists: !!token, 
+        userExists: !!user,
+        userEmail: user?.email 
+      });
+      
+      await architechAuth.storeAuthData(token, user);
+    });
+
+    this.onWebviewOrCore("auth/getStoredToken", async (msg) => {
+      const authData = await architechAuth.getStoredAuthData();
+      if (authData) {
+        return {
+          status: "success",
+          content: authData,
+        };
+      } else {
+        return { status: "error", error: "No stored auth" };
+      }
+    });
+
+    this.onWebviewOrCore("auth/clearToken", async (msg) => {
+      await architechAuth.clearAuthData();
     });
   }
 }

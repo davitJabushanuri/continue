@@ -3,6 +3,7 @@ import { useContext, useEffect, useState } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import { CustomScrollbarDiv } from ".";
+import { useArchitechAuth } from "../context/ArchitechAuth";
 import { AuthProvider } from "../context/Auth";
 import { IdeMessengerContext } from "../context/IdeMessenger";
 import { LocalStorageProvider } from "../context/LocalStorage";
@@ -14,6 +15,7 @@ import { enterEdit, exitEdit } from "../redux/thunks/edit";
 import { saveCurrentSession } from "../redux/thunks/session";
 import { fontSize, isMetaEquivalentKeyPressed } from "../util";
 import { incrementFreeTrialCount } from "../util/freeTrial";
+import { setLocalStorage } from "../util/localStorage";
 import { ROUTES } from "../util/navigation";
 import TextDialog from "./dialogs";
 import { GenerateRuleDialog } from "./GenerateRuleDialog";
@@ -47,6 +49,7 @@ const Layout = () => {
   const dispatch = useAppDispatch();
   const onboardingCard = useOnboardingCard();
   const ideMessenger = useContext(IdeMessengerContext);
+  const { isAuthenticated, isLoading } = useArchitechAuth();
 
   const { mainEditor } = useMainEditor();
   const dialogMessage = useAppSelector((state) => state.ui.dialogMessage);
@@ -234,13 +237,22 @@ const Layout = () => {
   }, []);
 
   useEffect(() => {
-    if (
-      isNewUserOnboarding() &&
-      (location.pathname === "/" || location.pathname === "/index.html")
-    ) {
-      onboardingCard.open();
+    // Always check auth status on home page
+    if (location.pathname === "/" || location.pathname === "/index.html") {
+      if (isLoading) {
+        return;
+      }
+      
+      // If not authenticated, always show login (force onboarding)
+      if (!isAuthenticated) {
+        setLocalStorage("hasDismissedOnboardingCard", false);
+        onboardingCard.open(null);
+      } else if (isNewUserOnboarding()) {
+        // If authenticated but new user, show normal onboarding
+        onboardingCard.open();
+      }
     }
-  }, [location]);
+  }, [location, isAuthenticated, isLoading]);
 
   return (
     <LocalStorageProvider>

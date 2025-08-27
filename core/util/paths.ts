@@ -252,15 +252,30 @@ function editConfigJson(
 }
 
 function editConfigYaml(callback: (config: ConfigYaml) => ConfigYaml): void {
-  const config = fs.readFileSync(getConfigYamlPath(), "utf8");
-  let configYaml = YAML.parse(config);
-  // Check if it's an object
-  if (typeof configYaml === "object" && configYaml !== null) {
-    configYaml = callback(configYaml as any) as any;
-    fs.writeFileSync(getConfigYamlPath(), YAML.stringify(configYaml));
-  } else {
-    console.warn("config.yaml is not a valid object");
+  const configPath = getConfigYamlPath();
+  let config: string;
+  
+  try {
+    config = fs.readFileSync(configPath, "utf8");
+  } catch (error) {
+    console.warn("Could not read config.yaml, creating new one");
+    config = "";
   }
+  
+  let configYaml = config ? YAML.parse(config) : null;
+  
+  if (!configYaml || typeof configYaml !== "object") {
+    console.warn("config.yaml is not a valid object, creating default config");
+    configYaml = {
+      name: "Local Assistant",
+      version: "1.0.0",
+      schema: "v1",
+      models: [],
+    };
+  }
+  
+  configYaml = callback(configYaml as any) as any;
+  fs.writeFileSync(configPath, YAML.stringify(configYaml));
 }
 
 export function editConfigFile(
@@ -269,10 +284,17 @@ export function editConfigFile(
   ) => SerializedContinueConfig,
   configYamlCallback: (config: ConfigYaml) => ConfigYaml,
 ): void {
-  if (fs.existsSync(getConfigYamlPath())) {
+  const configYamlPath = getConfigYamlPath();
+  const configJsonPath = getConfigJsonPath();
+  
+  if (fs.existsSync(configYamlPath)) {
     editConfigYaml(configYamlCallback);
-  } else if (fs.existsSync(getConfigJsonPath())) {
+  } else if (fs.existsSync(configJsonPath)) {
     editConfigJson(configJsonCallback);
+  } else {
+    // Neither config file exists, create a new YAML config
+    console.log("No config file found, creating new config.yaml");
+    editConfigYaml(configYamlCallback);
   }
 }
 

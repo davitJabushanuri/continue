@@ -29,7 +29,24 @@ import { BlockType, getBlockType } from "./getBlockType.js";
 
 export function parseConfigYaml(configYaml: string): ConfigYaml {
   try {
+    if (!configYaml || configYaml.trim() === "") {
+      return {
+        name: "Local Assistant",
+        version: "1.0.0",
+        schema: "v1"
+      };
+    }
+    
     const parsed = YAML.parse(configYaml);
+    
+    if (parsed === null || parsed === undefined) {
+      return {
+        name: "Local Assistant", 
+        version: "1.0.0",
+        schema: "v1"
+      };
+    }
+    
     const result = configYamlSchema.safeParse(parsed);
     if (result.success) {
       return result.data;
@@ -58,7 +75,38 @@ export function parseConfigYaml(configYaml: string): ConfigYaml {
 
 export function parseAssistantUnrolled(configYaml: string): AssistantUnrolled {
   try {
+    if (!configYaml || configYaml.trim() === "") {
+      return {
+        name: "Local Assistant",
+        version: "1.0.0",
+        schema: "v1",
+        models: [],
+        context: [],
+        data: [],
+        mcpServers: [],
+        rules: [],
+        prompts: [],
+        docs: []
+      };
+    }
+    
     const parsed = YAML.parse(configYaml);
+    
+    if (parsed === null || parsed === undefined) {
+      return {
+        name: "Local Assistant",
+        version: "1.0.0", 
+        schema: "v1",
+        models: [],
+        context: [],
+        data: [],
+        mcpServers: [],
+        rules: [],
+        prompts: [],
+        docs: []
+      };
+    }
+    
     const result = assistantUnrolledSchema.parse(parsed);
     return result;
   } catch (e: any) {
@@ -254,21 +302,37 @@ export async function unrollAssistantFromContent(
   registry: Registry,
   options: UnrollAssistantOptions,
 ): Promise<ConfigResult<AssistantUnrolled>> {
-  // Parse string to Zod-validated YAML
+  if (!rawYaml || rawYaml.trim() === "") {
+    const defaultConfig: AssistantUnrolled = {
+      name: "Local Assistant",
+      version: "1.0.0",
+      schema: "v1",
+      models: [],
+      context: [],
+      data: [],
+      mcpServers: [],
+      rules: [],
+      prompts: [],
+      docs: []
+    };
+    
+    return {
+      config: defaultConfig,
+      errors: [],
+      configLoadInterrupted: false,
+    };
+  }
+
   let parsedYaml = parseMarkdownRuleOrConfigYaml(rawYaml, id);
 
-  // Unroll blocks and convert their secrets to FQSNs
   const {
     config: unrolledAssistant,
     configLoadInterrupted,
     errors,
   } = await unrollBlocks(parsedYaml, registry, options.injectBlocks);
 
-  // Back to a string so we can fill in template variables
   const rawUnrolledYaml = YAML.stringify(unrolledAssistant);
 
-  // Convert all of the template variables to FQSNs
-  // Secrets from the block will have the assistant slug prepended to the FQSN
   const templatedYaml = renderTemplateData(rawUnrolledYaml, {
     secrets: extractFQSNMap(rawUnrolledYaml, [id]),
   });
@@ -281,7 +345,6 @@ export async function unrollAssistantFromContent(
     };
   }
 
-  // Render secret values/locations for client
   const secrets = await extractRenderedSecretsMap(
     templatedYaml,
     options.platformClient,
@@ -289,7 +352,6 @@ export async function unrollAssistantFromContent(
   );
   const renderedYaml = renderTemplateData(templatedYaml, { secrets });
 
-  // Parse again and replace models with proxy versions where secrets weren't rendered
   const finalConfig = useProxyForUnrenderedSecrets(
     parseAssistantUnrolled(renderedYaml),
     id,
