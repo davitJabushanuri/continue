@@ -1,7 +1,5 @@
-import { useState } from "react";
 import { useArchitechAuth } from "../../../context/ArchitechAuth";
 import { OnboardingLogin } from "./OnboardingLogin";
-import { OnboardingModelSelection } from "./OnboardingModelSelection";
 
 export function OnboardingCardLanding({
   onSelectConfigure,
@@ -11,32 +9,19 @@ export function OnboardingCardLanding({
   isDialog?: boolean;
 }) {
   const { isAuthenticated, login } = useArchitechAuth();
-  const [showModelSelection, setShowModelSelection] = useState(false);
 
   const handleLoginSuccess = (token: string, user: any) => {
     login(token, user);
-    setShowModelSelection(true);
+    // After successful login, the onboarding flow is complete
+    // The parent component will handle closing or navigation
   };
 
-  // If already authenticated, show model selection
-  if (isAuthenticated && showModelSelection) {
-    return (
-      <div className="w-full px-4 py-6">
-        <OnboardingModelSelection isDialog={isDialog} />
-      </div>
-    );
-  }
-
-  // If authenticated but haven't shown model selection yet, show it
+  // If already authenticated, onboarding is complete
   if (isAuthenticated) {
-    return (
-      <div className="w-full px-4 py-6">
-        <OnboardingModelSelection isDialog={isDialog} />
-      </div>
-    );
+    return null; // Or you could return a completion message
   }
 
-  // If not authenticated, always show login form (no skip option)
+  // If not authenticated, show login form
   return (
     <div className="w-full px-4 py-6">
       <OnboardingLogin
