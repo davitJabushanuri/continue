@@ -124,14 +124,19 @@ function ModelSelect() {
 
   useEffect(() => {
     setOptions(
-      allModels.map((model) => {
-        return {
-          value: model.title,
-          title: modelSelectTitle(model),
-          apiKey: model.apiKey,
-          sourceFile: model.sourceFile,
-        };
-      }),
+      allModels
+        .filter((model) => {
+          const title = modelSelectTitle(model);
+          return title.toLowerCase().includes('qwen');
+        })
+        .map((model) => {
+          return {
+            value: model.title,
+            title: modelSelectTitle(model),
+            apiKey: model.apiKey,
+            sourceFile: model.sourceFile,
+          };
+        }),
     );
   }, [allModels]);
 
