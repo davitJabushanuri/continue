@@ -1,4 +1,5 @@
 import * as vscode from "vscode";
+import { API_URL } from "../../../../config";
 
 export interface ArchitechUser {
   id: string;
@@ -21,7 +22,7 @@ export interface AuthResponse {
 }
 
 export class ArchitechAuthService {
-  private static readonly AUTH_BASE_URL = "http://192.168.100.22:5000";
+  private static readonly AUTH_BASE_URL = API_URL;
   private static readonly TOKEN_KEY = "architech_token";
   private static readonly USER_KEY = "architech_user";
 
@@ -30,23 +31,34 @@ export class ArchitechAuthService {
   /**
    * Authenticate user with email/password
    */
-  async login(email: string, password: string, isSignup: boolean = false): Promise<AuthResponse> {
+  async login(
+    email: string,
+    password: string,
+    isSignup: boolean = false,
+  ): Promise<AuthResponse> {
     try {
       console.log("ArchitechAuthService.login called:", { email, isSignup });
-      
-      const response = await fetch(`${ArchitechAuthService.AUTH_BASE_URL}/auth/login`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email,
-          password,
-          action: isSignup ? "signup" : "login",
-        }),
-      });
 
-      console.log("HTTP response status:", response.status, response.statusText);
+      const response = await fetch(
+        `${ArchitechAuthService.AUTH_BASE_URL}/auth/login`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email,
+            password,
+            action: isSignup ? "signup" : "login",
+          }),
+        },
+      );
+
+      console.log(
+        "HTTP response status:",
+        response.status,
+        response.statusText,
+      );
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
@@ -59,12 +71,12 @@ export class ArchitechAuthService {
 
       const data = await response.json();
       console.log("HTTP response data:", JSON.stringify(data, null, 2));
-      
+
       // If successful, store the token and user data
       if (data.status === "success" && data.content) {
-        console.log("Attempting to store auth data:", { 
-          hasToken: !!data.content.token, 
-          hasUser: !!data.content.user 
+        console.log("Attempting to store auth data:", {
+          hasToken: !!data.content.token,
+          hasUser: !!data.content.user,
         });
         await this.storeAuthData(data.content.token, data.content.user);
       }
@@ -82,15 +94,20 @@ export class ArchitechAuthService {
   /**
    * Verify stored token is still valid
    */
-  async verifyToken(token: string): Promise<{ valid: boolean; user?: ArchitechUser }> {
+  async verifyToken(
+    token: string,
+  ): Promise<{ valid: boolean; user?: ArchitechUser }> {
     try {
-      const response = await fetch(`${ArchitechAuthService.AUTH_BASE_URL}/auth/verify`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
+      const response = await fetch(
+        `${ArchitechAuthService.AUTH_BASE_URL}/auth/verify`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ token }),
         },
-        body: JSON.stringify({ token }),
-      });
+      );
 
       if (!response.ok) {
         return { valid: false };
@@ -113,23 +130,33 @@ export class ArchitechAuthService {
    */
   async storeAuthData(token: string, user: ArchitechUser): Promise<void> {
     await this.context.secrets.store(ArchitechAuthService.TOKEN_KEY, token);
-    await this.context.secrets.store(ArchitechAuthService.USER_KEY, JSON.stringify(user));
+    await this.context.secrets.store(
+      ArchitechAuthService.USER_KEY,
+      JSON.stringify(user),
+    );
   }
 
   /**
    * Get stored authentication data
    */
-  async getStoredAuthData(): Promise<{ token: string; user: ArchitechUser } | null> {
+  async getStoredAuthData(): Promise<{
+    token: string;
+    user: ArchitechUser;
+  } | null> {
     try {
-      const token = await this.context.secrets.get(ArchitechAuthService.TOKEN_KEY);
-      const userStr = await this.context.secrets.get(ArchitechAuthService.USER_KEY);
+      const token = await this.context.secrets.get(
+        ArchitechAuthService.TOKEN_KEY,
+      );
+      const userStr = await this.context.secrets.get(
+        ArchitechAuthService.USER_KEY,
+      );
 
       if (!token || !userStr) {
         return null;
       }
 
       const user = JSON.parse(userStr) as ArchitechUser;
-      
+
       // Verify token is still valid
       const verification = await this.verifyToken(token);
       if (!verification.valid) {
@@ -184,4 +211,4 @@ export class ArchitechAuthService {
   async logout(): Promise<void> {
     await this.clearAuthData();
   }
-} 
+}

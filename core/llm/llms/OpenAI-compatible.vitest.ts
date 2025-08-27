@@ -36,6 +36,7 @@ import OVHcloud from "./OVHcloud.js";
 // Base OpenAI tests
 import { afterEach, describe, expect, test, vi } from "vitest";
 import { ILLM } from "../../index.js";
+import { API_URL } from "../../../config/index.js";
 
 interface LlmTestCase {
   llm: ILLM;
@@ -411,7 +412,7 @@ createOpenAISubclassTests(Vllm, {
 
 createOpenAISubclassTests(TextGenWebUI, {
   providerName: "text-gen-webui",
-  defaultApiBase: "http://192.168.100.22:5000/v1/",
+  defaultApiBase: API_URL,
 });
 
 createOpenAISubclassTests(FunctionNetwork, {

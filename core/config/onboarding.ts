@@ -1,3 +1,4 @@
+import { API_URL } from "./../../config";
 import { ConfigYaml } from "@continuedev/config-yaml";
 
 export const LOCAL_ONBOARDING_PROVIDER_TITLE = "Ollama";
@@ -79,9 +80,12 @@ export function setupQuickstartConfig(config: ConfigYaml): ConfigYaml {
   return ensureBaseConfig(config);
 }
 
-export function setupArchitechConfig(config: ConfigYaml, modelInfo: string): ConfigYaml {
+export function setupArchitechConfig(
+  config: ConfigYaml,
+  modelInfo: string,
+): ConfigYaml {
   const baseConfig = ensureBaseConfig(config);
-  
+
   let modelData;
   try {
     modelData = JSON.parse(modelInfo);
@@ -90,13 +94,29 @@ export function setupArchitechConfig(config: ConfigYaml, modelInfo: string): Con
     return baseConfig;
   }
 
-  const roles = ["chat", "edit", "apply", "summarize", "autocomplete", "embed", "rerank"] as ("chat" | "autocomplete" | "embed" | "rerank" | "edit" | "apply" | "summarize")[];
+  const roles = [
+    "chat",
+    "edit",
+    "apply",
+    "summarize",
+    "autocomplete",
+    "embed",
+    "rerank",
+  ] as (
+    | "chat"
+    | "autocomplete"
+    | "embed"
+    | "rerank"
+    | "edit"
+    | "apply"
+    | "summarize"
+  )[];
 
   const newModel = {
     name: modelData.name,
     provider: "openai" as const,
     model: modelData.model,
-    apiBase: "http://192.168.100.22:5000/v1",
+    apiBase: API_URL,
     apiKey: "dummy-key",
     contextLength: modelData.contextLength,
     roles: roles,
@@ -104,20 +124,23 @@ export function setupArchitechConfig(config: ConfigYaml, modelInfo: string): Con
   };
 
   const existingModels = baseConfig.models ?? [];
-  const existingModel = existingModels.find(model => 
-    ('name' in model && model.name === newModel.name) ||
-    ('uses' in model && model.uses === newModel.name)
+  const existingModel = existingModels.find(
+    (model) =>
+      ("name" in model && model.name === newModel.name) ||
+      ("uses" in model && model.uses === newModel.name),
   );
-  
+
   if (existingModel) {
-    const updatedModels = existingModels.map(model => {
-      if (('name' in model && model.name === newModel.name) ||
-          ('uses' in model && model.uses === newModel.name)) {
+    const updatedModels = existingModels.map((model) => {
+      if (
+        ("name" in model && model.name === newModel.name) ||
+        ("uses" in model && model.uses === newModel.name)
+      ) {
         return newModel;
       }
       return model;
     });
-    
+
     return {
       ...baseConfig,
       models: updatedModels,

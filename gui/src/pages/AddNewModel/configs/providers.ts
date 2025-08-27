@@ -3,6 +3,7 @@ import { ModelProviderTags } from "../../../components/modelSelection/utils";
 import { completionParamsInputs } from "./completionParamsInputs";
 import type { ModelPackage } from "./models";
 import { models } from "./models";
+import { API_URL } from "../../../../../config";
 
 export interface InputDescriptor {
   inputType: HTMLInputTypeAttribute;
@@ -679,7 +680,7 @@ After it's up and running, you can start using Continue.`,
     collectInputFor: [
       {
         ...apiBaseInput,
-        defaultValue: "http://192.168.100.22:5000/v1/",
+        defaultValue: API_URL,
       },
       ...completionParamsInputsConfigs,
     ],
