@@ -152,7 +152,7 @@ export function OnboardingLogin({ onLoginSuccess, onSkipLogin, isDialog }: Onboa
 
       <form onSubmit={handleSubmit} className="space-y-4">
         {isSignup && (
-          <div>
+          <div className="grid">
             <label htmlFor="company" className="block text-sm font-medium text-foreground mb-1">
               Company/Organization
             </label>
@@ -161,14 +161,14 @@ export function OnboardingLogin({ onLoginSuccess, onSkipLogin, isDialog }: Onboa
               type="text"
               value={credentials.company || ""}
               onChange={(e) => handleInputChange("company", e.target.value)}
-              className="w-full px-3 py-2 border border-border rounded-md bg-input text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="px-3 py-2 border border-border rounded-md bg-input text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               placeholder="Your company or organization"
               disabled={isLoading}
             />
           </div>
         )}
 
-        <div>
+        <div className="grid">
           <label htmlFor="email" className="block text-sm font-medium text-foreground mb-1">
             Email *
           </label>
@@ -177,13 +177,13 @@ export function OnboardingLogin({ onLoginSuccess, onSkipLogin, isDialog }: Onboa
             type="email"
             value={credentials.email}
             onChange={(e) => handleInputChange("email", e.target.value)}
-            className="w-full px-3 py-2 border border-border rounded-md bg-input text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="px-3 py-2 border border-border rounded-md bg-input text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             placeholder="Enter your email"
             disabled={isLoading}
           />
         </div>
 
-        <div>
+        <div className="grid">
           <label htmlFor="password" className="block text-sm font-medium text-foreground mb-1">
             Password *
           </label>
@@ -192,14 +192,14 @@ export function OnboardingLogin({ onLoginSuccess, onSkipLogin, isDialog }: Onboa
             type="password"
             value={credentials.password}
             onChange={(e) => handleInputChange("password", e.target.value)}
-            className="w-full px-3 py-2 border border-border rounded-md bg-input text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="px-3 py-2 border border-border rounded-md bg-input text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             placeholder={isSignup ? "Create a password (min. 8 characters)" : "Enter your password"}
             disabled={isLoading}
           />
         </div>
 
         {isSignup && (
-          <div>
+          <div className="grid">
             <label htmlFor="confirmPassword" className="block text-sm font-medium text-foreground mb-1">
               Confirm Password *
             </label>
@@ -208,7 +208,7 @@ export function OnboardingLogin({ onLoginSuccess, onSkipLogin, isDialog }: Onboa
               type="password"
               value={credentials.confirmPassword || ""}
               onChange={(e) => handleInputChange("confirmPassword", e.target.value)}
-              className="w-full px-3 py-2 border border-border rounded-md bg-input text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="px-3 py-2 border border-border rounded-md bg-input text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               placeholder="Confirm your password"
               disabled={isLoading}
             />
