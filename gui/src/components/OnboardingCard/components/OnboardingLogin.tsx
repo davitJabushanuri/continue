@@ -28,6 +28,18 @@ export function OnboardingLogin({ onLoginSuccess, onSkipLogin, isDialog }: Onboa
   const [isSignup, setIsSignup] = useState(false);
   const ideMessenger = useContext(IdeMessengerContext);
 
+  // Clear credentials when switching between login/signup modes
+  const toggleSignup = () => {
+    setIsSignup(!isSignup);
+    setCredentials({ 
+      email: "", 
+      password: "",
+      confirmPassword: "",
+      company: ""
+    });
+    setError(null);
+  };
+
   const validateForm = () => {
     if (!credentials.email || !credentials.password) {
       setError("Please fill in all required fields");
@@ -239,7 +251,9 @@ export function OnboardingLogin({ onLoginSuccess, onSkipLogin, isDialog }: Onboa
         <div className="text-center">
           <button
             type="button"
-            onClick={() => setIsSignup(!isSignup)}
+            onClick={() => {
+              toggleSignup();
+            }}
             className="text-sm text-blue-600 dark:text-blue-400 hover:underline bg-transparent border-none p-0 cursor-pointer"
             disabled={isLoading}
           >
