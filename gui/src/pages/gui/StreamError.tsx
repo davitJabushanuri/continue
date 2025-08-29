@@ -5,12 +5,9 @@ import {
   Cog6ToothIcon,
   KeyIcon,
 } from "@heroicons/react/24/outline";
-import { DISCORD_LINK, GITHUB_LINK } from "core/util/constants";
 import { useContext, useMemo } from "react";
 import { GhostButton, SecondaryButton } from "../../components";
 import { useMainEditor } from "../../components/mainInput/TipTapEditor";
-import { DiscordIcon } from "../../components/svg/DiscordIcon";
-import { GithubIcon } from "../../components/svg/GithubIcon";
 import ToggleDiv from "../../components/ToggleDiv";
 import { useAuth } from "../../context/Auth";
 import { IdeMessengerContext } from "../../context/IdeMessenger";
@@ -289,35 +286,7 @@ const StreamErrorDialog = ({ error }: StreamErrorProps) => {
         </div>
       )}
 
-      <div>
-        <span className="text-base font-medium">Report this error</span>
-        <div className="mt-2 flex flex-row flex-wrap items-center gap-2">
-          <GhostButton
-            className="flex flex-row items-center gap-2 rounded px-3 py-1.5"
-            onClick={() => {
-              ideMessenger.post("controlPlane/openUrl", {
-                path: GITHUB_LINK,
-                orgSlug: undefined,
-              });
-            }}
-          >
-            <GithubIcon className="h-5 w-5" />
-            <span className="xs:flex hidden">Github</span>
-          </GhostButton>
-          <GhostButton
-            className="flex flex-row items-center gap-2 rounded px-3 py-1.5"
-            onClick={() => {
-              ideMessenger.post("controlPlane/openUrl", {
-                path: DISCORD_LINK,
-                orgSlug: undefined,
-              });
-            }}
-          >
-            <DiscordIcon className="h-5 w-5" />
-            <span className="xs:flex hidden">Discord</span>
-          </GhostButton>
-        </div>
-      </div>
+      
     </div>
   );
 };
