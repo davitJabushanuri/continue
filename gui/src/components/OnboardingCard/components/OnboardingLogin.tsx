@@ -173,7 +173,7 @@ export function OnboardingLogin({ onLoginSuccess, onSkipLogin, isDialog }: Onboa
               type="text"
               value={credentials.company || ""}
               onChange={(e) => handleInputChange("company", e.target.value)}
-              className="px-3 py-2 border border-border rounded-md bg-input text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="min-w-0 px-3 py-2 border border-border rounded-md bg-input text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               placeholder="Your company or organization"
               disabled={isLoading}
             />
@@ -189,7 +189,7 @@ export function OnboardingLogin({ onLoginSuccess, onSkipLogin, isDialog }: Onboa
             type="email"
             value={credentials.email}
             onChange={(e) => handleInputChange("email", e.target.value)}
-            className="px-3 py-2 border border-border rounded-md bg-input text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="min-w-0 px-3 py-2 border border-border rounded-md bg-input text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             placeholder="Enter your email"
             disabled={isLoading}
           />
@@ -204,7 +204,7 @@ export function OnboardingLogin({ onLoginSuccess, onSkipLogin, isDialog }: Onboa
             type="password"
             value={credentials.password}
             onChange={(e) => handleInputChange("password", e.target.value)}
-            className="px-3 py-2 border border-border rounded-md bg-input text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="min-w-0 px-3 py-2 border border-border rounded-md bg-input text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             placeholder={isSignup ? "Create a password (min. 8 characters)" : "Enter your password"}
             disabled={isLoading}
           />
@@ -220,7 +220,7 @@ export function OnboardingLogin({ onLoginSuccess, onSkipLogin, isDialog }: Onboa
               type="password"
               value={credentials.confirmPassword || ""}
               onChange={(e) => handleInputChange("confirmPassword", e.target.value)}
-              className="px-3 py-2 border border-border rounded-md bg-input text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="min-w-0 px-3 py-2 border border-border rounded-md bg-input text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               placeholder="Confirm your password"
               disabled={isLoading}
             />
